@@ -17,3 +17,5 @@ example output of argstogram on argstogram:
 (02) [2] ========================================================================================================================================================================================
 (03) [1] ============================================================================================
 ```
+
+In the spirit of [Clean Code](http://www.goodreads.com/book/show/3735293-clean-code) we want our functions to take as few arguments as possible. This helps to visualise how well a project is doing in the persuit of reducing the number of arguments their functions take in a project. The aim is `up and to the left`.
