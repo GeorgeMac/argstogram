@@ -12,8 +12,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-func do(a, b, c string, d int, e struct{}, f ...interface{}) {}
-
 type Package struct {
 	Name  string
 	Files map[string]map[string]int
