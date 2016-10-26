@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -8,6 +9,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -17,10 +19,11 @@ type Package struct {
 	Files map[string]map[string]int
 }
 
-func Parse(dir string, pkgs chan<- Package) error {
-	// Create the AST by parsing src.
-	fset := token.NewFileSet() // positions are relative to fset
-	parsed, err := parser.ParseDir(fset, dir, func(os.FileInfo) bool { return true }, 0)
+func Parse(dir string, skipTests bool, pkgs chan<- Package) error {
+	fset := token.NewFileSet()
+	parsed, err := parser.ParseDir(fset, dir, func(info os.FileInfo) bool {
+		return !skipTests || !strings.HasSuffix(info.Name(), "_test.go")
+	}, 0)
 	if err != nil {
 		return err
 	}
@@ -79,11 +82,15 @@ func printHistogram(histogram []int, width, maxWidth int) {
 }
 
 func main() {
+	var skipTests bool
+	flag.BoolVar(&skipTests, "skip-tests", false, "Skip analysing go test files")
+	flag.Parse()
+
 	packages := make(chan Package)
 	go func() {
 		if err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
-				if err := Parse(path, packages); err != nil {
+				if err := Parse(path, skipTests, packages); err != nil {
 					panic(err)
 				}
 			}
