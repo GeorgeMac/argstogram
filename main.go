@@ -66,14 +66,14 @@ func histAdd(hist []int, count int) ([]int, int) {
 	return newHist, newHist[count]
 }
 
-func printHistogram(histogram []int, width, maxWidth int) {
+func printHistogram(histogram []int, width, maxWidth, total int) {
 	padding := int(math.Log10(float64(maxWidth))) + 1
-	format := fmt.Sprintf("(%%02d) [%%0%dd] ", padding)
+	format := fmt.Sprintf("(%%02d) [%%0%dd] %%06.3f%%%% ", padding)
 	for i, count := range histogram {
-		fmt.Printf(format, i, count)
+		fmt.Printf(format, i, count, (float64(count) / float64(total) * 100.0))
 
 		// normalise
-		length := count * (width - 20) / maxWidth
+		length := count * (width - 30) / maxWidth
 		for j := 0; j < length; j++ {
 			fmt.Print("=")
 		}
@@ -105,11 +105,11 @@ func main() {
 
 	w, _, err := terminal.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
-		panic(err)
+		w = 100
 	}
 
 	histogram := []int{}
-	var maxWidth int
+	var total, maxWidth int
 	for pkg := range packages {
 		for _, fi := range pkg.Files {
 			for _, fnCount := range fi {
@@ -118,9 +118,11 @@ func main() {
 				if maxWidth < cur {
 					maxWidth = cur
 				}
+
+				total += fnCount
 			}
 		}
 	}
 
-	printHistogram(histogram, w, maxWidth)
+	printHistogram(histogram, w, maxWidth, total)
 }
